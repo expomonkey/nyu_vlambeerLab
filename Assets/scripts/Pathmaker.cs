@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
 // MAZE PROC GEN LAB
 // all students: complete steps 1-6, as listed in this file
 // optional: if you have extra time, complete the "extra tasks" to do at the very bottom
@@ -11,29 +12,117 @@ using UnityEngine;
 
 public class Pathmaker : MonoBehaviour {
 
-// STEP 2: ============================================================================================
-// translate the pseudocode below
+    // STEP 2: ============================================================================================
+    // translate the pseudocode below
 
-//	DECLARE CLASS MEMBER VARIABLES:
-//	Declare a private integer called counter that starts at 0; 		// counter var will track how many floor tiles I've instantiated
-//	Declare a public Transform called floorPrefab, assign the prefab in inspector;
-//	Declare a public Transform called pathmakerSpherePrefab, assign the prefab in inspector; 		// you'll have to make a "pathmakerSphere" prefab later
+    //	DECLARE CLASS MEMBER VARIABLES:
+    //	Declare a private integer called counter that starts at 0; 		// counter var will track how many floor tiles I've instantiated
+    //	Declare a public Transform called floorPrefab, assign the prefab in inspector;
+    //	Declare a public Transform called pathmakerSpherePrefab, assign the prefab in inspector; 		// you'll have to make a "pathmakerSphere" prefab later
+    private int counter = 0;
+    public Tile[] floorPrefabs;
+    public Transform pathmakerSpherePrefab;
+    public int lifeTime;
+    public float turnRadius;
+    bool shouldSpawn;
+    private void Start()
+    {
+        lifeTime = Random.Range(30, 70);
+        turnRadius = Random.Range(0.05f, 0.15f);
+    }
+
+    void Update() {
+        if (counter < lifeTime)
+        {
+            shouldSpawn = true;
+            float tempInt = Random.Range(0.0f, 1.0f);
+            //Debug.Log("RNG: " + tempInt);
+            if (tempInt < turnRadius)
+            {
+             //this.transform.rotation *= Quaternion.Euler(0, 0, 90);
+                transform.Rotate(new Vector3(0,90,0));
+                Debug.Log("Should rotate right");
+            }
+            else if (tempInt>= turnRadius && tempInt <= turnRadius*2)
+            {
+                //this.transform.rotation *= Quaternion.Euler(0, 0, 90);
+                transform.Rotate(new Vector3(0,90,0));
+                Debug.Log("Should rotate left");
+            }
+            else if (tempInt > 0.8f)
+            {
+                Vector3 newPos = this.transform.position;
+                Instantiate(pathmakerSpherePrefab, transform.position, Quaternion.identity);
+            }
+            if (GameManager.Instance.tileCount >= 500)
+            {
+                Destroy(this.gameObject);
+                return;
+            }
+            if (GameManager.Instance.tileList.Count > 0)
+            {
+                foreach (Tile tileTest in GameManager.Instance.tileList)
+                {
+                    if (this.transform.position == tileTest.transform.position)
+                    {
+                        shouldSpawn = false;
+                    }
+                }
+            }
+            if (shouldSpawn)
+            {
+                Tile tileCopy = (Tile)Instantiate(floorPrefabs[Random.Range(0, 3)], transform.position, Quaternion.identity);
+                GameManager.Instance.tileList.Add(tileCopy);
+                if (GameManager.Instance.tileCount == 0)
+                {
+                    GameManager.Instance.highestX = tileCopy.transform.position.x;
+                    GameManager.Instance.lowestX = tileCopy.transform.position.x;
+                    GameManager.Instance.highestZ = tileCopy.transform.position.z;
+                    GameManager.Instance.lowestZ = tileCopy.transform.position.z;
+
+                }
+                GameManager.Instance.tileCount++;
+
+                if (tileCopy.transform.position.x > GameManager.Instance.highestX)
+                {
+                    GameManager.Instance.highestX = tileCopy.transform.position.x;
+                }
+                if (tileCopy.transform.position.z > GameManager.Instance.highestZ)
+                {
+                    GameManager.Instance.highestZ = tileCopy.transform.position.z;
+                }
+                if (tileCopy.transform.position.x < GameManager.Instance.lowestX)
+                {
+                    GameManager.Instance.lowestX = tileCopy.transform.position.x;
+                }
+                if (tileCopy.transform.position.z < GameManager.Instance.lowestZ)
+                {
+                    GameManager.Instance.lowestZ = tileCopy.transform.position.z;
+                }
+            }
+            transform.position+=transform.forward * 4;
+            counter++;
+            //Debug.Log(counter);
+        }
+        else
+        {
+            Destroy(this.gameObject);
+        }
 
 
-	void Update () {
-//		If counter is less than 50, then:
-//			Generate a random number from 0.0f to 1.0f;
-//			If random number is less than 0.25f, then rotate myself 90 degrees;
-//				... Else if number is 0.25f-0.5f, then rotate myself -90 degrees;
-//				... Else if number is 0.99f-1.0f, then instantiate a pathmakerSpherePrefab clone at my current position;
-//			// end elseIf
+        //		If counter is less than 50, then:
+        //			Generate a random number from 0.0f to 1.0f;
+        //			If random number is less than 0.25f, then rotate myself 90 degrees;
+        //				... Else if number is 0.25f-0.5f, then rotate myself -90 degrees;
+        //				... Else if number is 0.99f-1.0f, then instantiate a pathmakerSpherePrefab clone at my current position;
+        //			// end elseIf
 
-//			Instantiate a floorPrefab clone at current position;
-//			Move forward ("forward", as in, the direction I'm currently facing) by 5 units;
-//			Increment counter;
-//		Else:
-//			Destroy my game object; 		// self destruct if I've made enough tiles already
-	}
+        //			Instantiate a floorPrefab clone at current position;
+        //			Move forward ("forward", as in, the direction I'm currently facing) by 5 units;
+        //			Increment counter;
+        //		Else:
+        //			Destroy my game object; 		// self destruct if I've made enough tiles already
+    }
 
 } // end of class scope
 
